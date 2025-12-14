@@ -7,16 +7,16 @@ import (
 	"uttc-hackathon-backend/internal/repository"
 	"uttc-hackathon-backend/internal/service"
 
-	firebase "firebase.google.com/go/v4"
+	"firebase.google.com/go/v4/auth"
 )
 
 type App struct {
 	UserHandler *handler.UserHandler
 }
 
-func NewApp(db *sql.DB, fb *firebase.App) *App {
+func NewApp(db *sql.DB, fbAuth *auth.Client) *App {
 	userRepo := repository.NewUserRepo(db)
-	fbRepo := repository.NewFirebaseAuthRepo(fb)
+	fbRepo := repository.NewFirebaseAuthRepo(fbAuth)
 
 	userSvc := service.NewUserService(userRepo, fbRepo)
 

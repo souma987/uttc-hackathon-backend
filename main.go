@@ -31,9 +31,9 @@ func main() {
 		database.CloseDB(db)
 	}()
 
-	fb := database.InitFirebase(googleCredentials)
+	fbAuth := database.InitFirebaseAuth(googleCredentials)
 
-	routes := app.NewApp(db, fb).Routes()
+	routes := app.NewApp(db, fbAuth).Routes()
 	handlerWithCors := middleware.CorsMiddleware(routes, corsAllowOrigin)
 
 	srv := &http.Server{Addr: ":8080", Handler: handlerWithCors}

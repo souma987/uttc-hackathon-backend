@@ -3,27 +3,22 @@ package repository
 import (
 	"context"
 
-	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/auth"
 )
 
 type FirebaseAuthRepo struct {
-	app *firebase.App
+	client *auth.Client
 }
 
-func NewFirebaseAuthRepo(app *firebase.App) *FirebaseAuthRepo {
-	return &FirebaseAuthRepo{app: app}
+func NewFirebaseAuthRepo(client *auth.Client) *FirebaseAuthRepo {
+	return &FirebaseAuthRepo{client: client}
 }
 
 func (r *FirebaseAuthRepo) CreateUser(ctx context.Context, email, password string) (string, error) {
-	client, err := r.app.Auth(ctx)
-	if err != nil {
-		return "", err
-	}
 	params := (&auth.UserToCreate{}).
 		Email(email).
 		Password(password)
-	u, err := client.CreateUser(ctx, params)
+	u, err := r.client.CreateUser(ctx, params)
 	if err != nil {
 		return "", err
 	}
@@ -31,20 +26,12 @@ func (r *FirebaseAuthRepo) CreateUser(ctx context.Context, email, password strin
 }
 
 func (r *FirebaseAuthRepo) DeleteUser(ctx context.Context, uid string) error {
-	client, err := r.app.Auth(ctx)
-	if err != nil {
-		return err
-	}
-	return client.DeleteUser(ctx, uid)
+	return r.client.DeleteUser(ctx, uid)
 }
 
 // VerifyIDToken validates a Firebase ID token and returns the UID.
 func (r *FirebaseAuthRepo) VerifyIDToken(ctx context.Context, idToken string) (string, error) {
-	client, err := r.app.Auth(ctx)
-	if err != nil {
-		return "", err
-	}
-	token, err := client.VerifyIDToken(ctx, idToken)
+	token, err := r.client.VerifyIDToken(ctx, idToken)
 	if err != nil {
 		return "", err
 	}
