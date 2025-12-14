@@ -17,6 +17,12 @@ import (
 func main() {
 	log.Println("Running main")
 
+	googleCredentialsDebug := os.Getenv("GOOGLE_CREDENTIALS_JSON")
+	if googleCredentialsDebug[0] != '{' {
+		log.Fatalln("GOOGLE_CREDENTIALS_JSON is not json!")
+		return
+	}
+
 	http.ListenAndServe(":8080", nil)
 	return
 
