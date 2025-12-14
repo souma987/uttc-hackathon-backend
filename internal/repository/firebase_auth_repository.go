@@ -37,3 +37,16 @@ func (r *FirebaseAuthRepo) DeleteUser(ctx context.Context, uid string) error {
 	}
 	return client.DeleteUser(ctx, uid)
 }
+
+// VerifyIDToken validates a Firebase ID token and returns the UID.
+func (r *FirebaseAuthRepo) VerifyIDToken(ctx context.Context, idToken string) (string, error) {
+	client, err := r.app.Auth(ctx)
+	if err != nil {
+		return "", err
+	}
+	token, err := client.VerifyIDToken(ctx, idToken)
+	if err != nil {
+		return "", err
+	}
+	return token.UID, nil
+}

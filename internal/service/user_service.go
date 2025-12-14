@@ -18,6 +18,7 @@ type UserRepository interface {
 type FirebaseRepository interface {
 	CreateUser(ctx context.Context, email, password string) (string, error)
 	DeleteUser(ctx context.Context, uid string) error
+	VerifyIDToken(ctx context.Context, idToken string) (string, error)
 }
 
 func NewUserService(repo UserRepository, fb FirebaseRepository) *UserService {
@@ -44,4 +45,13 @@ func (s *UserService) SignUp(ctx context.Context, name, email, password string) 
 		return nil, err
 	}
 	return u, nil
+}
+
+// GetCurrentUser validates a Firebase ID token and returns the corresponding user from DB.
+func (s *UserService) GetCurrentUser(ctx context.Context, idToken string) (*models.User, error) {
+	uid, err := s.firebaseAuth.VerifyIDToken(ctx, idToken)
+	if err != nil {
+		return nil, err
+	}
+	return s.repo.GetUser(ctx, uid)
 }
