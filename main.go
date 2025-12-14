@@ -17,6 +17,9 @@ import (
 func main() {
 	log.Println("Running main")
 
+	http.ListenAndServe(":8080", nil)
+	return
+
 	mysqlUser := os.Getenv("MYSQL_USER")
 	mysqlUserPwd := os.Getenv("MYSQL_PASSWORD")
 	mysqlDatabase := os.Getenv("MYSQL_DATABASE")
