@@ -41,3 +41,19 @@ We follow a **Modular Monolith** architecture using the standard **Handler-Servi
 - **Location:** Maintain a living record of functionality in `docs/features.md`.
 - **Status:** Clearly explicitly specify whether each feature is **[Implemented]** or **[Pending]**.
 - **Scope:** Track significant business capabilities only (e.g., "User Listing Creation", "Search"). Do not track trivial UI interactions (e.g., "delete confirmation dialogs", "hover states").
+
+### Error Handling Policy
+- Do not expose internal error details to clients.
+- Log internal errors using the standard `log` package.
+- Return generic, plain-text error messages in HTTP responses.
+- Preserve appropriate HTTP status codes (e.g., 400 for bad input, 404 for not found, 500 for internal errors).
+
+### Handler Documentation Policy
+- Every HTTP handler must include a documentation comment directly above the function.
+- The comment should specify, at minimum:
+  - Route and method (e.g., `POST /users`).
+  - Required headers (e.g., `Content-Type: application/json`).
+  - Request JSON schema with field names and types, noting which fields are required or optional.
+  - Success response schema (field names and types) and status code.
+  - Possible error responses with status codes (use generic messages per Error Handling Policy).
+- Purpose: Ensure API contracts are explicit and discoverable within the codebase.

@@ -6,18 +6,42 @@ import (
 )
 
 type UserService struct {
-	repo UserRepository
+	repo         UserRepository
+	firebaseAuth FirebaseRepository
 }
 
 type UserRepository interface {
 	GetUser(ctx context.Context, id string) (*models.User, error)
+	CreateUser(ctx context.Context, user *models.User) error
 }
 
-func NewUserService(repo UserRepository) *UserService {
-	return &UserService{repo: repo}
+type FirebaseRepository interface {
+	CreateUser(ctx context.Context, email, password string) (string, error)
+	DeleteUser(ctx context.Context, uid string) error
+}
+
+func NewUserService(repo UserRepository, fb FirebaseRepository) *UserService {
+	return &UserService{repo: repo, firebaseAuth: fb}
 }
 
 func (s *UserService) FetchUser(ctx context.Context, id string) (*models.User, error) {
 	// Business logic...
 	return s.repo.GetUser(ctx, id)
+}
+
+// SignUp creates a user in Firebase and then inserts a matching user in DB.
+// Atomicity is achieved via compensating action: if DB insert fails, the Firebase user is deleted.
+func (s *UserService) SignUp(ctx context.Context, name, email, password string) (*models.User, error) {
+	uid, err := s.firebaseAuth.CreateUser(ctx, email, password)
+	if err != nil {
+		return nil, err
+	}
+
+	u := &models.User{ID: uid, Name: name, Email: email}
+	if err := s.repo.CreateUser(ctx, u); err != nil {
+		// Rollback Firebase user on DB failure
+		_ = s.firebaseAuth.DeleteUser(ctx, uid)
+		return nil, err
+	}
+	return u, nil
 }

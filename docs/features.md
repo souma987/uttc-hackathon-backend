@@ -2,7 +2,7 @@
 
 ## Authentication & User Management
 - [ ] **User Onboarding**
-    - [ ] **Sign Up**: Register a new account using Email/Password.
+    - [x] **Sign Up**: Register a new account using Email/Password.
 
 ## Marketplace Core
 - [ ] **Discovery & Browsing**

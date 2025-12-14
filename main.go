@@ -28,7 +28,9 @@ func main() {
 		database.CloseDB(db)
 	}()
 
-	routes := app.NewApp(db).Routes()
+	fb := database.InitFirebase()
+
+	routes := app.NewApp(db, fb).Routes()
 	handlerWithCors := middleware.CorsMiddleware(routes, corsAllowOrigin)
 
 	srv := &http.Server{Addr: ":8080", Handler: handlerWithCors}
