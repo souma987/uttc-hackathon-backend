@@ -2,8 +2,12 @@ package service
 
 import (
 	"context"
+	"errors"
+
 	"uttc-hackathon-backend/internal/models"
 )
+
+var ErrInvalidPasswordLength = errors.New("password must be between 8 and 4096 characters")
 
 type UserService struct {
 	repo         UserRepository
@@ -27,6 +31,10 @@ func NewUserService(repo UserRepository, fb FirebaseRepository) *UserService {
 
 // SignUp creates a user in Firebase and then inserts a matching user in DB.
 func (s *UserService) SignUp(ctx context.Context, name, email, password string) (*models.User, error) {
+	if len(password) < 8 || len(password) > 4096 {
+		return nil, ErrInvalidPasswordLength
+	}
+
 	uid, err := s.firebaseAuth.CreateUser(ctx, email, password)
 	if err != nil {
 		return nil, err

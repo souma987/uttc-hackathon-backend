@@ -2,8 +2,11 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
+
+	"uttc-hackathon-backend/internal/service"
 )
 
 type CreateUserRequest struct {
@@ -25,7 +28,7 @@ type CreateUserRequest struct {
 //     {
 //     "name": string (optional),
 //     "email": string (required),
-//     "password": string (required)
+//     "password": string (required, 8-4096 characters)
 //     }
 //
 // Success Response
@@ -60,6 +63,11 @@ func (h *UserHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.svc.SignUp(r.Context(), req.Name, req.Email, req.Password)
 	if err != nil {
+		if errors.Is(err, service.ErrInvalidPasswordLength) {
+			http.Error(w, "password must be between 8 and 4096 characters", http.StatusBadRequest)
+			return
+		}
+
 		// Do not expose internal error details
 		log.Printf("sign up error: %v", err)
 		http.Error(w, "something went wrong", http.StatusBadRequest)
