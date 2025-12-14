@@ -21,6 +21,7 @@ func main() {
 	mysqlHost := os.Getenv("MYSQL_HOST")
 	mysqlConnectionParms := os.Getenv("MYSQL_CONNECTION_PARAMS")
 	corsAllowOrigin := os.Getenv("CORS_ALLOW_ORIGIN")
+	googleCredentials := os.Getenv("GOOGLE_CREDENTIALS_JSON")
 
 	db := database.InitDB(mysqlUser, mysqlUserPwd, mysqlDatabase, mysqlHost, mysqlConnectionParms)
 	defer func() {
@@ -28,7 +29,7 @@ func main() {
 		database.CloseDB(db)
 	}()
 
-	fb := database.InitFirebase()
+	fb := database.InitFirebase(googleCredentials)
 
 	routes := app.NewApp(db, fb).Routes()
 	handlerWithCors := middleware.CorsMiddleware(routes, corsAllowOrigin)

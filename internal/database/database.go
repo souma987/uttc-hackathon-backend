@@ -20,6 +20,7 @@ func InitDB(mysqlUser, mysqlUserPwd, mysqlDatabase, mysqlHost, connectionParms s
 	if err := db.Ping(); err != nil {
 		log.Fatalf("fail: _db.Ping, %v\n", err)
 	}
+	log.Println("Initialized DB")
 	return db
 }
 
