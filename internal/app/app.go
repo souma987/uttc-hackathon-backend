@@ -28,7 +28,6 @@ func NewApp(db *sql.DB, fb *firebase.App) *App {
 func (a *App) Routes() http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /users", a.UserHandler.HandleGet)
 	mux.HandleFunc("POST /users", a.UserHandler.HandleCreate)
 	mux.HandleFunc("GET /me", a.UserHandler.HandleMe)
 

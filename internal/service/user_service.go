@@ -25,11 +25,6 @@ func NewUserService(repo UserRepository, fb FirebaseRepository) *UserService {
 	return &UserService{repo: repo, firebaseAuth: fb}
 }
 
-func (s *UserService) FetchUser(ctx context.Context, id string) (*models.User, error) {
-	// Business logic...
-	return s.repo.GetUser(ctx, id)
-}
-
 // SignUp creates a user in Firebase and then inserts a matching user in DB.
 // Atomicity is achieved via compensating action: if DB insert fails, the Firebase user is deleted.
 func (s *UserService) SignUp(ctx context.Context, name, email, password string) (*models.User, error) {
