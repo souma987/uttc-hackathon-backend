@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"uttc-hackathon-backend/internal/models"
 )
@@ -96,4 +97,41 @@ func (r *ListingRepo) CreateListing(ctx context.Context, l *models.Listing) erro
 	}
 
 	return nil
+}
+
+func (r *ListingRepo) GetListing(ctx context.Context, id string) (*models.Listing, error) {
+	query := `
+		SELECT id, seller_id, title, description, images, price, quantity, status, item_condition, created_at, updated_at
+		FROM listings
+		WHERE id = ?
+	`
+
+	var l models.Listing
+	var imagesJSON []byte
+
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
+		&l.ID,
+		&l.SellerID,
+		&l.Title,
+		&l.Description,
+		&imagesJSON,
+		&l.Price,
+		&l.Quantity,
+		&l.Status,
+		&l.ItemCondition,
+		&l.CreatedAt,
+		&l.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil // Or nil, sql.ErrNoRows - service will handle
+		}
+		return nil, fmt.Errorf("get listing: %w", err)
+	}
+
+	if err := json.Unmarshal(imagesJSON, &l.Images); err != nil {
+		return nil, fmt.Errorf("unmarshal listing images: %w", err)
+	}
+
+	return &l, nil
 }

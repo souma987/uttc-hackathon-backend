@@ -33,10 +33,22 @@ func (s *ListingService) GetFeed(ctx context.Context, limit, offset int) ([]*mod
 }
 
 var (
-	ErrTitleRequired = errors.New("title is required")
-	ErrPriceInvalid  = errors.New("price must be greater than 0")
-	ErrNoImages      = errors.New("at least one image is required")
+	ErrTitleRequired   = errors.New("title is required")
+	ErrPriceInvalid    = errors.New("price must be greater than 0")
+	ErrNoImages        = errors.New("at least one image is required")
+	ErrListingNotFound = errors.New("listing not found")
 )
+
+func (s *ListingService) GetListing(ctx context.Context, id string) (*models.Listing, error) {
+	l, err := s.repo.GetListing(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if l == nil {
+		return nil, ErrListingNotFound
+	}
+	return l, nil
+}
 
 func (s *ListingService) CreateListing(ctx context.Context, req *models.Listing) (*models.Listing, error) {
 	// Basic Validation

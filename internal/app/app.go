@@ -36,6 +36,7 @@ func (a *App) Routes() http.Handler {
 	mux.HandleFunc("GET /me", a.UserHandler.HandleMe)
 
 	mux.HandleFunc("GET /listings/feed", a.ListingHandler.HandleFeed)
+	mux.HandleFunc("GET /listings/{id}", a.ListingHandler.HandleGetListing)
 	mux.HandleFunc("POST /listings", a.ListingHandler.HandleCreate)
 
 	return mux

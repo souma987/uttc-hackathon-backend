@@ -5,9 +5,10 @@
     - [x] **Sign Up**: Register a new account using Email/Password.
 
 ## Marketplace Core
-- [ ] **Discovery & Browsing**
+- [x] **Discovery & Browsing**
     - [x] **Item Listing**: View feed/grid of available items for sale.
-- [ ] **Selling (Vendor Flow)**
+    - [x] **View Listing Details**: View full details of a specific item.
+- [x] **Selling (Vendor Flow)**
     - [x] **Create Listing**: Form to input item details, price, and upload images.
 - [ ] **Buying (Customer Flow)**
     - [ ] **Purchase Item**: Checkout process to buy a listed item.
