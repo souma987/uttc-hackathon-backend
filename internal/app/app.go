@@ -25,7 +25,7 @@ func NewApp(db *sql.DB, fbAuth *auth.Client) *App {
 
 	return &App{
 		UserHandler:    handler.NewUserHandler(userSvc),
-		ListingHandler: handler.NewListingHandler(listingSvc),
+		ListingHandler: handler.NewListingHandler(listingSvc, userSvc),
 	}
 }
 
@@ -36,6 +36,7 @@ func (a *App) Routes() http.Handler {
 	mux.HandleFunc("GET /me", a.UserHandler.HandleMe)
 
 	mux.HandleFunc("GET /listings/feed", a.ListingHandler.HandleFeed)
+	mux.HandleFunc("POST /listings", a.ListingHandler.HandleCreate)
 
 	return mux
 }

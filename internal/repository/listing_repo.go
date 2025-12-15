@@ -66,3 +66,34 @@ func (r *ListingRepo) GetListingsFeed(ctx context.Context, limit, offset int) ([
 
 	return listings, nil
 }
+
+func (r *ListingRepo) CreateListing(ctx context.Context, l *models.Listing) error {
+	imagesJSON, err := json.Marshal(l.Images)
+	if err != nil {
+		return fmt.Errorf("marshal listing images: %w", err)
+	}
+
+	query := `
+		INSERT INTO listings (id, seller_id, title, description, images, price, quantity, status, item_condition, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`
+
+	_, err = r.db.ExecContext(ctx, query,
+		l.ID,
+		l.SellerID,
+		l.Title,
+		l.Description,
+		imagesJSON,
+		l.Price,
+		l.Quantity,
+		l.Status,
+		l.ItemCondition,
+		l.CreatedAt,
+		l.UpdatedAt,
+	)
+	if err != nil {
+		return fmt.Errorf("insert listing: %w", err)
+	}
+
+	return nil
+}

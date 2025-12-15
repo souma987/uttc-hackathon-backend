@@ -5,6 +5,7 @@ go 1.25
 require (
 	firebase.google.com/go/v4 v4.18.0
 	github.com/go-sql-driver/mysql v1.9.3
+	github.com/oklog/ulid/v2 v2.1.1
 	google.golang.org/api v0.231.0
 )
 
