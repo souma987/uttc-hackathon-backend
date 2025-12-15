@@ -19,3 +19,8 @@
 ## AI Integrations
 - [ ] **Generative AI Feature**
     - [ ] **AI Assistant**: Implementation of a generative AI feature (e.g., auto-generating item descriptions from image/title).
+
+## DB Schema
+- [x] **Listings**
+- [x] **Orders**
+- [x] **Categories**
