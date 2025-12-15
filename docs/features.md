@@ -6,7 +6,7 @@
 
 ## Marketplace Core
 - [ ] **Discovery & Browsing**
-    - [ ] **Item Listing**: View feed/grid of available items for sale.
+    - [x] **Item Listing**: View feed/grid of available items for sale.
 - [ ] **Selling (Vendor Flow)**
     - [ ] **Create Listing**: Form to input item details, price, and upload images.
 - [ ] **Buying (Customer Flow)**

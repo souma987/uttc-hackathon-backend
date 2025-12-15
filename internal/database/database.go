@@ -10,9 +10,13 @@ import (
 
 func InitDB(mysqlUser, mysqlUserPwd, mysqlDatabase, mysqlHost, connectionParms string) *sql.DB {
 	connStr := fmt.Sprintf("%s:%s@%s/%s", mysqlUser, mysqlUserPwd, mysqlHost, mysqlDatabase)
+
 	if len(connectionParms) > 0 {
-		connStr += "?" + connectionParms
+		connStr += "?" + connectionParms + "&parseTime=true"
+	} else {
+		connStr += "?parseTime=true"
 	}
+
 	db, err := sql.Open("mysql", connStr)
 	if err != nil {
 		log.Fatalf("fail: sql.Open, %v\n", err)
