@@ -14,26 +14,31 @@ type App struct {
 	UserHandler    *handler.UserHandler
 	listingHandler *handler.ListingHandler
 	orderHandler   *handler.OrderHandler
+	MessageHandler *handler.MessageHandler
 }
 
 func NewApp(db *sql.DB, fbAuth *auth.Client) *App {
 	userRepo := repository.NewUserRepo(db)
 	listingRepo := repository.NewListingRepo(db)
 	orderRepo := repository.NewOrderRepo(db)
+	messageRepo := repository.NewMessageRepository(db)
 	fbRepo := repository.NewFirebaseAuthRepo(fbAuth)
 
 	userSvc := service.NewUserService(userRepo, fbRepo)
 	listingSvc := service.NewListingService(listingRepo)
 	orderSvc := service.NewOrderService(orderRepo)
+	messageSvc := service.NewMessageService(messageRepo)
 
 	userHandler := handler.NewUserHandler(userSvc)
 	listingHandler := handler.NewListingHandler(listingSvc, userSvc)
 	orderHandler := handler.NewOrderHandler(orderSvc, userSvc)
+	messageHandler := handler.NewMessageHandler(messageSvc, userSvc)
 
 	return &App{
 		UserHandler:    userHandler,
 		listingHandler: listingHandler,
 		orderHandler:   orderHandler,
+		MessageHandler: messageHandler,
 	}
 }
 
@@ -50,6 +55,9 @@ func (a *App) Routes() http.Handler {
 
 	// Orders
 	mux.HandleFunc("POST /orders", a.orderHandler.HandleCreate)
+
+	// Messages
+	mux.HandleFunc("POST /messages", a.MessageHandler.HandleCreate)
 
 	return mux
 }

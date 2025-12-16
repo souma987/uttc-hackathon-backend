@@ -15,7 +15,8 @@
 
 ## Social & Communication
 - [ ] **Direct Messaging**
-    - [ ] **Chat System**: Real-time or persistent messaging between buyers and sellers.
+    - [/] **Chat System**: Real-time or persistent messaging between buyers and sellers.
+        - [x] **Send Message**: Endpoint to create a new message.
 
 ## AI Integrations
 - [ ] **Generative AI Feature**
