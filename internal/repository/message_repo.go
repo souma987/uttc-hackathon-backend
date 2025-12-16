@@ -32,3 +32,31 @@ func (r *MessageRepository) CreateMessage(ctx context.Context, m *models.Message
 	}
 	return nil
 }
+
+func (r *MessageRepository) GetMessages(ctx context.Context, userID, otherUserID string) ([]*models.Message, error) {
+	query := `
+		SELECT id, sender_id, receiver_id, content, created_at
+		FROM messages
+		WHERE (sender_id = ? AND receiver_id = ?)
+		   OR (sender_id = ? AND receiver_id = ?)
+		ORDER BY created_at ASC
+	`
+	rows, err := r.db.QueryContext(ctx, query, userID, otherUserID, otherUserID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("query messages: %w", err)
+	}
+	defer rows.Close()
+
+	var messages []*models.Message
+	for rows.Next() {
+		var m models.Message
+		if err := rows.Scan(&m.ID, &m.SenderID, &m.ReceiverID, &m.Content, &m.CreatedAt); err != nil {
+			return nil, fmt.Errorf("scan message: %w", err)
+		}
+		messages = append(messages, &m)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows error: %w", err)
+	}
+	return messages, nil
+}

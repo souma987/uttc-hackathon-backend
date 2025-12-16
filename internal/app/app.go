@@ -58,6 +58,7 @@ func (a *App) Routes() http.Handler {
 
 	// Messages
 	mux.HandleFunc("POST /messages", a.MessageHandler.HandleCreate)
+	mux.HandleFunc("GET /messages/with/{userid}", a.MessageHandler.HandleGetMessages)
 
 	return mux
 }

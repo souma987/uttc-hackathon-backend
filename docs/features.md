@@ -17,6 +17,7 @@
 - [ ] **Direct Messaging**
     - [/] **Chat System**: Real-time or persistent messaging between buyers and sellers.
         - [x] **Send Message**: Endpoint to create a new message.
+        - [x] **Fetch Messages**: Endpoint to fetch conversation history with another user.
 
 ## AI Integrations
 - [ ] **Generative AI Feature**

@@ -44,3 +44,7 @@ func (s *MessageService) CreateMessage(ctx context.Context, senderID, receiverID
 
 	return msg, nil
 }
+
+func (s *MessageService) GetMessages(ctx context.Context, userID, otherUserID string) ([]*models.Message, error) {
+	return s.repo.GetMessages(ctx, userID, otherUserID)
+}
