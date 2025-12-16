@@ -23,9 +23,9 @@ type Order struct {
 	ListingMainImage string      `json:"listing_main_image"`
 	ListingPrice     int         `json:"listing_price"`
 	Quantity         int         `json:"quantity"`
-	PriceTotal       int         `json:"price_total"`
+	TotalPrice       int         `json:"total_price"`
 	PlatformFee      int         `json:"platform_fee"`
-	TotalCharged     int         `json:"total_charged"`
+	NetPayout        int         `json:"net_payout"`
 	Status           OrderStatus `json:"status"`
 	CreatedAt        time.Time   `json:"created_at"`
 	UpdatedAt        time.Time   `json:"updated_at"`

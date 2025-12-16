@@ -18,7 +18,7 @@ type OrderService struct {
 }
 
 type OrderRepository interface {
-	CreateOrder(ctx context.Context, o *models.Order) error
+	CreateOrder(ctx context.Context, listingID string, quantity int, fn func(*models.Listing) (*models.Order, error)) error
 }
 
 func NewOrderService(repo OrderRepository) *OrderService {
@@ -30,19 +30,30 @@ func (s *OrderService) CreateOrder(ctx context.Context, buyerID string, req *mod
 		return nil, ErrQuantityInvalid
 	}
 
-	// Generate Order ID
-	req.ID = "ord_" + ulid.Make().String()
+	// Use repository transactional callback to ensure consistency
+	err := s.repo.CreateOrder(ctx, req.ListingID, req.Quantity, func(l *models.Listing) (*models.Order, error) {
+		req.ID = "ord_" + ulid.Make().String()
+		req.BuyerID = buyerID
+		req.SellerID = l.SellerID
+		req.ListingTitle = l.Title
+		req.ListingPrice = l.Price
+		if len(l.Images) > 0 {
+			req.ListingMainImage = l.Images[0].URL
+		}
+		req.Status = models.OrderStatusAwaitingPayment
+		req.CreatedAt = time.Now()
+		req.UpdatedAt = time.Now()
 
-	req.BuyerID = buyerID
-	req.Status = models.OrderStatusAwaitingPayment
-	req.CreatedAt = time.Now()
-	req.UpdatedAt = time.Now()
+		// Calculate totals
+		req.TotalPrice = l.Price * req.Quantity
+		// Fee is 10% of total price, rounded up (ceil)
+		req.PlatformFee = (req.TotalPrice + 9) / 10
+		req.NetPayout = req.TotalPrice - req.PlatformFee
 
-	// Add platform fee calculation logic if needed.
-	// For now, let's keep it simple or 0.
-	req.PlatformFee = 0
+		return req, nil
+	})
 
-	if err := s.repo.CreateOrder(ctx, req); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
