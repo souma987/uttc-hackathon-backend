@@ -55,6 +55,7 @@ func (a *App) Routes() http.Handler {
 
 	// Orders
 	mux.HandleFunc("POST /orders", a.orderHandler.HandleCreate)
+	mux.HandleFunc("GET /orders/{orderId}", a.orderHandler.HandleGet)
 
 	// Messages
 	mux.HandleFunc("POST /messages", a.MessageHandler.HandleCreate)

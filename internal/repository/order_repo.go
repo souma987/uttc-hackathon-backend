@@ -21,6 +21,7 @@ var (
 	ErrListingNotFound   = errors.New("listing not found or not active")
 	ErrInsufficientStock = errors.New("insufficient stock")
 	ErrListingNotActive  = errors.New("listing is not active")
+	ErrOrderNotFound     = errors.New("order not found")
 )
 
 func (r *OrderRepo) CreateOrder(ctx context.Context, listingID string, quantity int, fn func(*models.Listing) (*models.Order, error)) error {
@@ -102,4 +103,26 @@ func (r *OrderRepo) CreateOrder(ctx context.Context, listingID string, quantity 
 	}
 
 	return nil
+}
+
+func (r *OrderRepo) GetOrder(ctx context.Context, orderID string) (*models.Order, error) {
+	query := `
+		SELECT id, buyer_id, seller_id, listing_id, listing_title, listing_main_image,
+			listing_price, quantity, total_price, platform_fee, net_payout, status, created_at, updated_at
+		FROM orders
+		WHERE id = ?
+	`
+	var o models.Order
+	err := r.db.QueryRowContext(ctx, query, orderID).Scan(
+		&o.ID, &o.BuyerID, &o.SellerID, &o.ListingID, &o.ListingTitle, &o.ListingMainImage,
+		&o.ListingPrice, &o.Quantity, &o.TotalPrice, &o.PlatformFee, &o.NetPayout, &o.Status,
+		&o.CreatedAt, &o.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrOrderNotFound
+		}
+		return nil, fmt.Errorf("get order: %w", err)
+	}
+	return &o, nil
 }

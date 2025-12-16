@@ -11,6 +11,7 @@ import (
 
 var (
 	ErrQuantityInvalid = errors.New("quantity must be greater than 0")
+	ErrUnauthorized    = errors.New("unauthorized to access this order")
 )
 
 type OrderService struct {
@@ -19,6 +20,7 @@ type OrderService struct {
 
 type OrderRepository interface {
 	CreateOrder(ctx context.Context, listingID string, quantity int, fn func(*models.Listing) (*models.Order, error)) error
+	GetOrder(ctx context.Context, orderID string) (*models.Order, error)
 }
 
 func NewOrderService(repo OrderRepository) *OrderService {
@@ -58,4 +60,18 @@ func (s *OrderService) CreateOrder(ctx context.Context, buyerID string, req *mod
 	}
 
 	return req, nil
+}
+
+func (s *OrderService) GetOrder(ctx context.Context, userID, orderID string) (*models.Order, error) {
+	order, err := s.repo.GetOrder(ctx, orderID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Authorization check: User must be buyer or seller
+	if order.BuyerID != userID && order.SellerID != userID {
+		return nil, ErrUnauthorized
+	}
+
+	return order, nil
 }

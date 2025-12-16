@@ -12,6 +12,7 @@
     - [x] **Create Listing**: Form to input item details, price, and upload images.
 - [ ] **Buying (Customer Flow)**
     - [ ] **Purchase Item**: Checkout process to buy a listed item.
+    - [x] **View Order Details**: Fetch order details for buyer and seller.
 
 ## Social & Communication
 - [ ] **Direct Messaging**
