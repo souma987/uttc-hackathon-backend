@@ -12,20 +12,28 @@ import (
 
 type App struct {
 	UserHandler    *handler.UserHandler
-	ListingHandler *handler.ListingHandler
+	listingHandler *handler.ListingHandler
+	orderHandler   *handler.OrderHandler
 }
 
 func NewApp(db *sql.DB, fbAuth *auth.Client) *App {
 	userRepo := repository.NewUserRepo(db)
 	listingRepo := repository.NewListingRepo(db)
+	orderRepo := repository.NewOrderRepo(db)
 	fbRepo := repository.NewFirebaseAuthRepo(fbAuth)
 
 	userSvc := service.NewUserService(userRepo, fbRepo)
 	listingSvc := service.NewListingService(listingRepo)
+	orderSvc := service.NewOrderService(orderRepo)
+
+	userHandler := handler.NewUserHandler(userSvc)
+	listingHandler := handler.NewListingHandler(listingSvc, userSvc)
+	orderHandler := handler.NewOrderHandler(orderSvc, userSvc)
 
 	return &App{
-		UserHandler:    handler.NewUserHandler(userSvc),
-		ListingHandler: handler.NewListingHandler(listingSvc, userSvc),
+		UserHandler:    userHandler,
+		listingHandler: listingHandler,
+		orderHandler:   orderHandler,
 	}
 }
 
@@ -35,9 +43,13 @@ func (a *App) Routes() http.Handler {
 	mux.HandleFunc("POST /users", a.UserHandler.HandleCreate)
 	mux.HandleFunc("GET /me", a.UserHandler.HandleMe)
 
-	mux.HandleFunc("GET /listings/feed", a.ListingHandler.HandleFeed)
-	mux.HandleFunc("GET /listings/{id}", a.ListingHandler.HandleGetListing)
-	mux.HandleFunc("POST /listings", a.ListingHandler.HandleCreate)
+	// Listings
+	mux.HandleFunc("GET /listings/feed", a.listingHandler.HandleFeed)
+	mux.HandleFunc("POST /listings", a.listingHandler.HandleCreate)
+	mux.HandleFunc("GET /listings/{id}", a.listingHandler.HandleGetListing)
+
+	// Orders
+	mux.HandleFunc("POST /orders", a.orderHandler.HandleCreate)
 
 	return mux
 }
