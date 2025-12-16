@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"uttc-hackathon-backend/internal/middleware"
 	"uttc-hackathon-backend/internal/service"
 )
 
@@ -39,20 +40,7 @@ func (h *MessageHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authz := r.Header.Get("Authorization")
-	const prefix = "Bearer "
-	if len(authz) < len(prefix) || authz[:len(prefix)] != prefix {
-		http.Error(w, "missing or invalid authorization header", http.StatusUnauthorized)
-		return
-	}
-	idToken := authz[len(prefix):]
-
-	user, err := h.userSvc.GetCurrentUser(r.Context(), idToken)
-	if err != nil {
-		log.Printf("create message auth error: %v", err)
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
+	userID := middleware.GetUserIDFromContext(r.Context())
 
 	var req createMessageRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -60,7 +48,7 @@ func (h *MessageHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	msg, err := h.svc.CreateMessage(r.Context(), user.ID, req.ReceiverID, req.Content)
+	msg, err := h.svc.CreateMessage(r.Context(), userID, req.ReceiverID, req.Content)
 	if err != nil {
 		if errors.Is(err, service.ErrContentRequired) {
 			http.Error(w, err.Error(), http.StatusBadRequest)

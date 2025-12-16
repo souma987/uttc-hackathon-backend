@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"uttc-hackathon-backend/internal/middleware"
 	"uttc-hackathon-backend/internal/models"
 	"uttc-hackathon-backend/internal/service"
 )
@@ -36,20 +37,7 @@ func (h *ListingHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authz := r.Header.Get("Authorization")
-	const prefix = "Bearer "
-	if len(authz) < len(prefix) || authz[:len(prefix)] != prefix {
-		http.Error(w, "missing or invalid authorization header", http.StatusUnauthorized)
-		return
-	}
-	idToken := authz[len(prefix):]
-
-	user, err := h.userSvc.GetCurrentUser(r.Context(), idToken)
-	if err != nil {
-		log.Printf("create listing auth error: %v", err)
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
+	userID := middleware.GetUserIDFromContext(r.Context())
 
 	var req models.Listing
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -57,7 +45,7 @@ func (h *ListingHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req.SellerID = user.ID
+	req.SellerID = userID
 
 	createdListing, err := h.svc.CreateListing(r.Context(), &req)
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"uttc-hackathon-backend/internal/middleware"
 	"uttc-hackathon-backend/internal/models"
 	"uttc-hackathon-backend/internal/repository"
 	"uttc-hackathon-backend/internal/service"
@@ -43,20 +44,7 @@ func (h *OrderHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authz := r.Header.Get("Authorization")
-	const prefix = "Bearer "
-	if len(authz) < len(prefix) || authz[:len(prefix)] != prefix {
-		http.Error(w, "missing or invalid authorization header", http.StatusUnauthorized)
-		return
-	}
-	idToken := authz[len(prefix):]
-
-	user, err := h.userSvc.GetCurrentUser(r.Context(), idToken)
-	if err != nil {
-		log.Printf("create order auth error: %v", err)
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
+	userID := middleware.GetUserIDFromContext(r.Context())
 
 	var req models.Order
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -64,7 +52,7 @@ func (h *OrderHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	createdOrder, err := h.svc.CreateOrder(r.Context(), user.ID, &req)
+	createdOrder, err := h.svc.CreateOrder(r.Context(), userID, &req)
 	if err != nil {
 		if errors.Is(err, service.ErrQuantityInvalid) {
 			http.Error(w, err.Error(), http.StatusBadRequest)

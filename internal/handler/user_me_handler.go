@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"uttc-hackathon-backend/internal/middleware"
 )
 
 // HandleMe returns the current authenticated user.
@@ -33,26 +34,15 @@ import (
 //   - 404 Not Found: valid token but user missing in DB
 //   - 500 Internal Server Error: failed to encode response
 func (h *UserHandler) HandleMe(w http.ResponseWriter, r *http.Request) {
-	authz := r.Header.Get("Authorization")
-	const prefix = "Bearer "
-	if len(authz) < len(prefix) || authz[:len(prefix)] != prefix {
-		http.Error(w, "missing or invalid authorization header", http.StatusUnauthorized)
-		return
-	}
-	idToken := authz[len(prefix):]
-	if idToken == "" {
-		http.Error(w, "missing token", http.StatusUnauthorized)
-		return
-	}
-
-	user, err := h.svc.GetCurrentUser(r.Context(), idToken)
+	userID := middleware.GetUserIDFromContext(r.Context())
+	user, err := h.svc.GetUser(r.Context(), userID)
 	if err != nil {
 		if err.Error() == "user not found" {
 			http.Error(w, "not found", http.StatusNotFound)
 			return
 		}
 		log.Printf("me error: %v", err)
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
 

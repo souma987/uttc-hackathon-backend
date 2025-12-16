@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"uttc-hackathon-backend/internal/middleware"
 )
 
 // HandleGetMessages fetches all messages between the current user and the specified user.
@@ -27,20 +28,7 @@ func (h *MessageHandler) HandleGetMessages(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	authz := r.Header.Get("Authorization")
-	const prefix = "Bearer "
-	if len(authz) < len(prefix) || authz[:len(prefix)] != prefix {
-		http.Error(w, "missing or invalid authorization header", http.StatusUnauthorized)
-		return
-	}
-	idToken := authz[len(prefix):]
-
-	user, err := h.userSvc.GetCurrentUser(r.Context(), idToken)
-	if err != nil {
-		log.Printf("get messages auth error: %v", err)
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
+	userID := middleware.GetUserIDFromContext(r.Context())
 
 	otherUserID := r.PathValue("userid")
 	if otherUserID == "" {
@@ -48,7 +36,7 @@ func (h *MessageHandler) HandleGetMessages(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	messages, err := h.svc.GetMessages(r.Context(), user.ID, otherUserID)
+	messages, err := h.svc.GetMessages(r.Context(), userID, otherUserID)
 	if err != nil {
 		log.Printf("get messages error: %v", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)

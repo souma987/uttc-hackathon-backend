@@ -49,11 +49,12 @@ func (s *UserService) SignUp(ctx context.Context, name, email, password, avatarU
 	return u, nil
 }
 
-// GetCurrentUser validates a Firebase ID token and returns the corresponding user from DB.
-func (s *UserService) GetCurrentUser(ctx context.Context, idToken string) (*models.User, error) {
-	uid, err := s.firebaseAuth.VerifyIDToken(ctx, idToken)
-	if err != nil {
-		return nil, err
-	}
-	return s.repo.GetUser(ctx, uid)
+// VerifyToken validates a Firebase ID token and returns the UID.
+func (s *UserService) VerifyToken(ctx context.Context, idToken string) (string, error) {
+	return s.firebaseAuth.VerifyIDToken(ctx, idToken)
+}
+
+// GetUser returns the user from DB by ID.
+func (s *UserService) GetUser(ctx context.Context, id string) (*models.User, error) {
+	return s.repo.GetUser(ctx, id)
 }

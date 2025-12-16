@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"uttc-hackathon-backend/internal/middleware"
 	"uttc-hackathon-backend/internal/repository"
 	"uttc-hackathon-backend/internal/service"
 )
@@ -30,21 +31,7 @@ func (h *OrderHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 1. Auth Check
-	authz := r.Header.Get("Authorization")
-	const prefix = "Bearer "
-	if len(authz) < len(prefix) || authz[:len(prefix)] != prefix {
-		http.Error(w, "missing or invalid authorization header", http.StatusUnauthorized)
-		return
-	}
-	idToken := authz[len(prefix):]
-
-	user, err := h.userSvc.GetCurrentUser(r.Context(), idToken)
-	if err != nil {
-		log.Printf("get order auth error: %v", err)
-		http.Error(w, "unauthorized", http.StatusUnauthorized)
-		return
-	}
+	userID := middleware.GetUserIDFromContext(r.Context())
 
 	// 2. Parse Order ID
 	orderID := r.PathValue("orderId")
@@ -54,7 +41,7 @@ func (h *OrderHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 3. Call Service
-	order, err := h.svc.GetOrder(r.Context(), user.ID, orderID)
+	order, err := h.svc.GetOrder(r.Context(), userID, orderID)
 	if err != nil {
 		if errors.Is(err, repository.ErrOrderNotFound) {
 			http.Error(w, "order not found", http.StatusNotFound)
