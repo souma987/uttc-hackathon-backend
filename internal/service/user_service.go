@@ -30,7 +30,7 @@ func NewUserService(repo UserRepository, fb FirebaseRepository) *UserService {
 }
 
 // SignUp creates a user in Firebase and then inserts a matching user in DB.
-func (s *UserService) SignUp(ctx context.Context, name, email, password string) (*models.User, error) {
+func (s *UserService) SignUp(ctx context.Context, name, email, password, avatarURL string) (*models.User, error) {
 	if len(password) < 8 || len(password) > 4096 {
 		return nil, ErrInvalidPasswordLength
 	}
@@ -40,7 +40,7 @@ func (s *UserService) SignUp(ctx context.Context, name, email, password string) 
 		return nil, err
 	}
 
-	u := &models.User{ID: uid, Name: name, Email: email}
+	u := &models.User{ID: uid, Name: name, Email: email, AvatarURL: avatarURL}
 	if err := s.repo.CreateUser(ctx, u); err != nil {
 		// Rollback Firebase user on DB failure
 		_ = s.firebaseAuth.DeleteUser(ctx, uid)

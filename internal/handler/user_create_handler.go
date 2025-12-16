@@ -10,9 +10,10 @@ import (
 )
 
 type CreateUserRequest struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	AvatarURL string `json:"avatar_url"`
 }
 
 // HandleCreate registers a new user.
@@ -28,7 +29,8 @@ type CreateUserRequest struct {
 //     {
 //     "name": string (optional),
 //     "email": string (required),
-//     "password": string (required, 8-4096 characters)
+//     "password": string (required, 8-4096 characters),
+//     "avatar_url": string (optional)
 //     }
 //
 // Success Response
@@ -61,7 +63,7 @@ func (h *UserHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := h.svc.SignUp(r.Context(), req.Name, req.Email, req.Password)
+	user, err := h.svc.SignUp(r.Context(), req.Name, req.Email, req.Password, req.AvatarURL)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidPasswordLength) {
 			http.Error(w, "password must be between 8 and 4096 characters", http.StatusBadRequest)
