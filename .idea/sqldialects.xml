@@ -4,6 +4,7 @@
     <file url="file://$PROJECT_DIR$/migrations/0001_create_table_users.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/migrations/0002_create_market_schema.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/migrations/0003_rename_columns_in_orders.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/migrations/0004_create_table_messages.sql" dialect="MySQL" />
     <file url="PROJECT" dialect="MySQL" />
   </component>
 </project>
