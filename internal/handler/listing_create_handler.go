@@ -26,6 +26,7 @@ import (
 //   - price: int (required)
 //   - quantity: int
 //   - item_condition: string (new, excellent, good, not_good, bad)
+//   - is_active: bool (optional, default false/draft)
 //
 // Success Response
 //   - 201 Created
@@ -39,15 +40,37 @@ func (h *ListingHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
 
 	userID := middleware.GetUserIDFromContext(r.Context())
 
-	var req models.Listing
+	var req struct {
+		Title         string                `json:"title"`
+		Description   string                `json:"description"`
+		Images        []models.ListingImage `json:"images"`
+		Price         int                   `json:"price"`
+		Quantity      int                   `json:"quantity"`
+		ItemCondition models.ItemCondition  `json:"item_condition"`
+		IsActive      bool                  `json:"is_active"`
+	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	req.SellerID = userID
+	status := models.ListingStatusDraft
+	if req.IsActive {
+		status = models.ListingStatusActive
+	}
 
-	createdListing, err := h.svc.CreateListing(r.Context(), &req)
+	listing := &models.Listing{
+		SellerID:      userID,
+		Title:         req.Title,
+		Description:   req.Description,
+		Images:        req.Images,
+		Price:         req.Price,
+		Quantity:      req.Quantity,
+		ItemCondition: req.ItemCondition,
+		Status:        status,
+	}
+
+	createdListing, err := h.svc.CreateListing(r.Context(), listing)
 	if err != nil {
 		if errors.Is(err, service.ErrTitleRequired) ||
 			errors.Is(err, service.ErrPriceInvalid) ||

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"strings"
-	"time"
 	"uttc-hackathon-backend/internal/models"
 	"uttc-hackathon-backend/internal/repository"
 
@@ -73,13 +72,7 @@ func (s *ListingService) CreateListing(ctx context.Context, req *models.Listing)
 		}
 	}
 
-	// Set defaults and system fields
 	req.ID = "lst_" + ulid.Make().String()
-	req.Status = models.ListingStatusActive
-	req.CreatedAt = time.Now()
-	req.UpdatedAt = time.Now()
-
-	// Ensure caller (handler) sets SellerID
 
 	if err := s.repo.CreateListing(ctx, req); err != nil {
 		return nil, err
