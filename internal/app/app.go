@@ -8,6 +8,7 @@ import (
 	"uttc-hackathon-backend/internal/repository"
 	"uttc-hackathon-backend/internal/service"
 
+	"cloud.google.com/go/vertexai/genai"
 	"firebase.google.com/go/v4/auth"
 )
 
@@ -17,14 +18,16 @@ type App struct {
 	orderHandler   *handler.OrderHandler
 	MessageHandler *handler.MessageHandler
 	authMiddleware func(http.Handler) http.Handler
+	VertexRepo     *repository.VertexRepository // Added this
 }
 
-func NewApp(db *sql.DB, fbAuth *auth.Client) *App {
+func NewApp(db *sql.DB, fbAuth *auth.Client, vertexClient *genai.Client) *App {
 	userRepo := repository.NewUserRepo(db)
 	listingRepo := repository.NewListingRepo(db)
 	orderRepo := repository.NewOrderRepo(db)
 	messageRepo := repository.NewMessageRepository(db)
 	fbRepo := repository.NewFirebaseAuthRepo(fbAuth)
+	vertexRepo := repository.NewVertexRepository(vertexClient)
 
 	userSvc := service.NewUserService(userRepo, fbRepo)
 	listingSvc := service.NewListingService(listingRepo)
@@ -44,6 +47,7 @@ func NewApp(db *sql.DB, fbAuth *auth.Client) *App {
 		orderHandler:   orderHandler,
 		MessageHandler: messageHandler,
 		authMiddleware: authMW,
+		VertexRepo:     vertexRepo,
 	}
 }
 

@@ -24,6 +24,8 @@ func main() {
 	mysqlConnectionParms := os.Getenv("MYSQL_CONNECTION_PARAMS")
 	corsAllowOrigin := os.Getenv("CORS_ALLOW_ORIGIN")
 	googleCredentials := os.Getenv("GOOGLE_CREDENTIALS_JSON")
+	gcpProjectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
+	gcpLocation := os.Getenv("GOOGLE_CLOUD_LOCATION")
 
 	db := database.InitDB(mysqlUser, mysqlUserPwd, mysqlDatabase, mysqlHost, mysqlConnectionParms)
 	defer func() {
@@ -32,8 +34,10 @@ func main() {
 	}()
 
 	fbAuth := database.InitFirebaseAuth(googleCredentials)
+	vertexClient := database.InitVertexAI(gcpProjectID, gcpLocation, googleCredentials)
+	defer vertexClient.Close()
 
-	routes := app.NewApp(db, fbAuth).Routes()
+	routes := app.NewApp(db, fbAuth, vertexClient).Routes()
 	handlerWithCors := middleware.CorsMiddleware(routes, corsAllowOrigin)
 
 	srv := &http.Server{Addr: ":8080", Handler: handlerWithCors}
