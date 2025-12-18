@@ -45,7 +45,7 @@ func (h *MessageHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
 
 	msg, err := h.svc.CreateMessage(r.Context(), userID, req.ReceiverID, req.Content)
 	if err != nil {
-		if errors.Is(err, service.ErrContentRequired) {
+		if errors.Is(err, service.ErrContentRequired) || errors.Is(err, service.ErrSelfMessage) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}

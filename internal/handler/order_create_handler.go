@@ -37,7 +37,7 @@ func (h *OrderHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
 
 	createdOrder, err := h.svc.CreateOrder(r.Context(), userID, &req)
 	if err != nil {
-		if errors.Is(err, service.ErrQuantityInvalid) {
+		if errors.Is(err, service.ErrQuantityInvalid) || errors.Is(err, service.ErrBuyOwnListing) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}

@@ -12,6 +12,7 @@ import (
 var (
 	ErrQuantityInvalid = errors.New("quantity must be greater than 0")
 	ErrUnauthorized    = errors.New("unauthorized to access this order")
+	ErrBuyOwnListing   = errors.New("cannot buy your own listing")
 )
 
 type OrderService struct {
@@ -34,6 +35,10 @@ func (s *OrderService) CreateOrder(ctx context.Context, buyerID string, req *mod
 
 	// Use repository transactional callback to ensure consistency
 	err := s.repo.CreateOrder(ctx, req.ListingID, req.Quantity, func(l *models.Listing) (*models.Order, error) {
+		if buyerID == l.SellerID {
+			return nil, ErrBuyOwnListing
+		}
+
 		req.ID = "ord_" + ulid.Make().String()
 		req.BuyerID = buyerID
 		req.SellerID = l.SellerID

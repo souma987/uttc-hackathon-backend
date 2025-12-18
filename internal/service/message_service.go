@@ -17,6 +17,7 @@ import (
 
 var (
 	ErrContentRequired = errors.New("content is required")
+	ErrSelfMessage     = errors.New("cannot send message to yourself")
 )
 
 type MessageService struct {
@@ -34,6 +35,10 @@ func NewMessageService(repo *repository.MessageRepository, userRepo *repository.
 func (s *MessageService) CreateMessage(ctx context.Context, senderID, receiverID, content string) (*models.Message, error) {
 	if content == "" {
 		return nil, ErrContentRequired
+	}
+
+	if senderID == receiverID {
+		return nil, ErrSelfMessage
 	}
 
 	id := "msg_" + ulid.Make().String()
