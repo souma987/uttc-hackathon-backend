@@ -34,9 +34,9 @@ type NewListingSuggestionResponse struct {
 //   - Authorization: Bearer <token>
 //
 // Request Body:
-//   - title (string, required): The title of the listing.
+//   - title (string, optional): The title of the listing.
 //   - description (string, required): The description of the listing.
-//   - condition (string, required): The condition of the listing.
+//   - condition (string, optional): The condition of the listing.
 //   - language (string, required): The language for the suggestion ("ja" or "en").
 //
 // Response Body (Success - 200 OK):
@@ -52,7 +52,7 @@ func (h *SuggestionHandler) HandleGetSuggestion(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	if req.Title == "" || req.Description == "" || req.Condition == "" || req.Language == "" {
+	if req.Description == "" || req.Language == "" {
 		http.Error(w, "Missing required fields", http.StatusBadRequest)
 		return
 	}
