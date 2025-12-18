@@ -8,11 +8,15 @@ import (
 	"uttc-hackathon-backend/internal/repository"
 )
 
-type SuggestionService struct {
-	vertexRepo *repository.VertexRepository
+type VertexGenerativeClient interface {
+	GenerateContent(ctx context.Context, modelName string, prompt string, config repository.GenerationConfig) (string, error)
 }
 
-func NewSuggestionService(vertexRepo *repository.VertexRepository) *SuggestionService {
+type SuggestionService struct {
+	vertexRepo VertexGenerativeClient
+}
+
+func NewSuggestionService(vertexRepo VertexGenerativeClient) *SuggestionService {
 	return &SuggestionService{
 		vertexRepo: vertexRepo,
 	}
