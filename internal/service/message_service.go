@@ -3,9 +3,14 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
+
+	"log" // Moved log to its own group as per instruction
 	"uttc-hackathon-backend/internal/models"
 	"uttc-hackathon-backend/internal/repository"
+
+	"sort"
 
 	"github.com/oklog/ulid/v2"
 )
@@ -15,11 +20,15 @@ var (
 )
 
 type MessageService struct {
-	repo *repository.MessageRepository
+	repo     *repository.MessageRepository
+	userRepo *repository.UserRepo
 }
 
-func NewMessageService(repo *repository.MessageRepository) *MessageService {
-	return &MessageService{repo: repo}
+func NewMessageService(repo *repository.MessageRepository, userRepo *repository.UserRepo) *MessageService {
+	return &MessageService{
+		repo:     repo,
+		userRepo: userRepo,
+	}
 }
 
 func (s *MessageService) CreateMessage(ctx context.Context, senderID, receiverID, content string) (*models.Message, error) {
@@ -47,4 +56,62 @@ func (s *MessageService) CreateMessage(ctx context.Context, senderID, receiverID
 
 func (s *MessageService) GetMessages(ctx context.Context, userID, otherUserID string) ([]*models.Message, error) {
 	return s.repo.GetMessages(ctx, userID, otherUserID)
+}
+
+func (s *MessageService) GetConversations(ctx context.Context, userID string) ([]models.Conversation, error) {
+	incoming, err := s.repo.GetLatestIncomingMessages(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get incoming messages: %w", err)
+	}
+	outgoing, err := s.repo.GetLatestOutgoingMessages(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("get outgoing messages: %w", err)
+	}
+
+	conversationMap := make(map[string]*models.Message)
+	for _, m := range incoming {
+		conversationMap[m.SenderID] = m
+	}
+	for _, m := range outgoing {
+		partnerID := m.ReceiverID
+		// compare timestamp and keep newer message
+		if existing, ok := conversationMap[partnerID]; !ok || m.CreatedAt.After(existing.CreatedAt) {
+			conversationMap[partnerID] = m
+		}
+	}
+
+	// Sort by CreatedAt DESC
+	var messages []*models.Message
+	for _, m := range conversationMap {
+		messages = append(messages, m)
+	}
+	sort.Slice(messages, func(i, j int) bool {
+		return messages[i].CreatedAt.After(messages[j].CreatedAt)
+	})
+
+	// Enrich with User Profile
+	var conversations []models.Conversation
+	for _, m := range messages {
+		partnerID := m.SenderID
+		if partnerID == userID {
+			partnerID = m.ReceiverID
+		}
+
+		userProfile, err := s.userRepo.GetUserProfile(ctx, partnerID)
+		if err != nil {
+			log.Printf("failed to get user profile for conversation: %v", err)
+			return nil, fmt.Errorf("get user profile for conversation: %w", err)
+		}
+		if userProfile == nil {
+			log.Printf("conversations: user profile not found for partnerID: %s", partnerID)
+			continue
+		}
+
+		conversations = append(conversations, models.Conversation{
+			Message: m,
+			User:    userProfile,
+		})
+	}
+
+	return conversations, nil
 }

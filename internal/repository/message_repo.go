@@ -60,3 +60,67 @@ func (r *MessageRepository) GetMessages(ctx context.Context, userID, otherUserID
 	}
 	return messages, nil
 }
+
+// GetLatestIncomingMessages returns the latest message from each person who sent something to the user
+func (r *MessageRepository) GetLatestIncomingMessages(ctx context.Context, userID string) ([]*models.Message, error) {
+	qIncoming := `
+		SELECT id, sender_id, receiver_id, content, created_at
+		FROM messages
+		WHERE id IN (
+			SELECT MAX(id)
+			FROM messages
+			WHERE receiver_id = ?
+			GROUP BY sender_id
+		)
+	`
+	rows, err := r.db.QueryContext(ctx, qIncoming, userID)
+	if err != nil {
+		return nil, fmt.Errorf("query incoming: %w", err)
+	}
+	defer rows.Close()
+
+	var messages []*models.Message
+	for rows.Next() {
+		var m models.Message
+		if err := rows.Scan(&m.ID, &m.SenderID, &m.ReceiverID, &m.Content, &m.CreatedAt); err != nil {
+			return nil, fmt.Errorf("scan incoming: %w", err)
+		}
+		messages = append(messages, &m)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows incoming error: %w", err)
+	}
+	return messages, nil
+}
+
+// GetLatestOutgoingMessages returns the latest message sending to each person
+func (r *MessageRepository) GetLatestOutgoingMessages(ctx context.Context, userID string) ([]*models.Message, error) {
+	qOutgoing := `
+		SELECT id, sender_id, receiver_id, content, created_at
+		FROM messages
+		WHERE id IN (
+			SELECT MAX(id)
+			FROM messages
+			WHERE sender_id = ?
+			GROUP BY receiver_id
+		)
+	`
+	rows, err := r.db.QueryContext(ctx, qOutgoing, userID)
+	if err != nil {
+		return nil, fmt.Errorf("query outgoing: %w", err)
+	}
+	defer rows.Close()
+
+	var messages []*models.Message
+	for rows.Next() {
+		var m models.Message
+		if err := rows.Scan(&m.ID, &m.SenderID, &m.ReceiverID, &m.Content, &m.CreatedAt); err != nil {
+			return nil, fmt.Errorf("scan outgoing: %w", err)
+		}
+		messages = append(messages, &m)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows outgoing error: %w", err)
+	}
+	return messages, nil
+}

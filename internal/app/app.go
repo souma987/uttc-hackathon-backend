@@ -32,7 +32,7 @@ func NewApp(db *sql.DB, fbAuth *auth.Client, vertexClient *genai.Client) *App {
 	userSvc := service.NewUserService(userRepo, fbRepo)
 	listingSvc := service.NewListingService(listingRepo)
 	orderSvc := service.NewOrderService(orderRepo)
-	messageSvc := service.NewMessageService(messageRepo)
+	messageSvc := service.NewMessageService(messageRepo, userRepo)
 
 	userHandler := handler.NewUserHandler(userSvc)
 	listingHandler := handler.NewListingHandler(listingSvc, userSvc)
@@ -70,6 +70,7 @@ func (a *App) Routes() http.Handler {
 
 	// Messages
 	mux.Handle("POST /messages", a.authMiddleware(http.HandlerFunc(a.MessageHandler.HandleCreate)))
+	mux.Handle("GET /messages/conversations", a.authMiddleware(http.HandlerFunc(a.MessageHandler.HandleGetConversations)))
 	mux.Handle("GET /messages/with/{userid}", a.authMiddleware(http.HandlerFunc(a.MessageHandler.HandleGetMessages)))
 
 	return mux
