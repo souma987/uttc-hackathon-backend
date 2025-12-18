@@ -13,12 +13,13 @@ import (
 )
 
 type App struct {
-	UserHandler    *handler.UserHandler
-	listingHandler *handler.ListingHandler
-	orderHandler   *handler.OrderHandler
-	MessageHandler *handler.MessageHandler
-	authMiddleware func(http.Handler) http.Handler
-	VertexRepo     *repository.VertexRepository // Added this
+	UserHandler       *handler.UserHandler
+	listingHandler    *handler.ListingHandler
+	orderHandler      *handler.OrderHandler
+	MessageHandler    *handler.MessageHandler
+	SuggestionHandler *handler.SuggestionHandler
+	authMiddleware    func(http.Handler) http.Handler
+	VertexRepo        *repository.VertexRepository // Added this
 }
 
 func NewApp(db *sql.DB, fbAuth *auth.Client, vertexClient *genai.Client) *App {
@@ -33,21 +34,24 @@ func NewApp(db *sql.DB, fbAuth *auth.Client, vertexClient *genai.Client) *App {
 	listingSvc := service.NewListingService(listingRepo)
 	orderSvc := service.NewOrderService(orderRepo)
 	messageSvc := service.NewMessageService(messageRepo, userRepo)
+	suggestionSvc := service.NewSuggestionService(vertexRepo)
 
 	userHandler := handler.NewUserHandler(userSvc)
 	listingHandler := handler.NewListingHandler(listingSvc, userSvc)
 	orderHandler := handler.NewOrderHandler(orderSvc, userSvc)
 	messageHandler := handler.NewMessageHandler(messageSvc, userSvc)
+	suggestionHandler := handler.NewSuggestionHandler(suggestionSvc)
 
 	authMW := middleware.AuthMiddleware(userSvc)
 
 	return &App{
-		UserHandler:    userHandler,
-		listingHandler: listingHandler,
-		orderHandler:   orderHandler,
-		MessageHandler: messageHandler,
-		authMiddleware: authMW,
-		VertexRepo:     vertexRepo,
+		UserHandler:       userHandler,
+		listingHandler:    listingHandler,
+		orderHandler:      orderHandler,
+		MessageHandler:    messageHandler,
+		SuggestionHandler: suggestionHandler,
+		authMiddleware:    authMW,
+		VertexRepo:        vertexRepo,
 	}
 }
 
@@ -72,6 +76,9 @@ func (a *App) Routes() http.Handler {
 	mux.Handle("POST /messages", a.authMiddleware(http.HandlerFunc(a.MessageHandler.HandleCreate)))
 	mux.Handle("GET /messages/conversations", a.authMiddleware(http.HandlerFunc(a.MessageHandler.HandleGetConversations)))
 	mux.Handle("GET /messages/with/{userid}", a.authMiddleware(http.HandlerFunc(a.MessageHandler.HandleGetMessages)))
+
+	// Suggestions
+	mux.Handle("POST /suggestions/newListing", a.authMiddleware(http.HandlerFunc(a.SuggestionHandler.HandleGetSuggestion)))
 
 	return mux
 }
