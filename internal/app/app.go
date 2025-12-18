@@ -57,6 +57,7 @@ func (a *App) Routes() http.Handler {
 	// Users
 	mux.HandleFunc("POST /users", a.UserHandler.HandleCreate)
 	mux.Handle("GET /me", a.authMiddleware(http.HandlerFunc(a.UserHandler.HandleMe)))
+	mux.HandleFunc("GET /users/{userId}/profile", a.UserHandler.HandleGetProfile)
 
 	// Listings
 	mux.HandleFunc("GET /listings/feed", a.listingHandler.HandleFeed)

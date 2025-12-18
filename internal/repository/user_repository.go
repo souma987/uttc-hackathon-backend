@@ -35,3 +35,18 @@ func (r *UserRepo) CreateUser(ctx context.Context, user *models.User) error {
 	_, err := r.db.ExecContext(ctx, q, user.ID, user.Email, user.Name, user.AvatarURL)
 	return err
 }
+
+func (r *UserRepo) GetUserProfile(ctx context.Context, id string) (*models.UserProfile, error) {
+	const q = "SELECT id, username, avatarUrl FROM users WHERE id = ?"
+	row := r.db.QueryRowContext(ctx, q, id)
+	var u models.UserProfile
+	var avatarURL sql.NullString
+	if err := row.Scan(&u.ID, &u.Name, &avatarURL); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	u.AvatarURL = avatarURL.String
+	return &u, nil
+}

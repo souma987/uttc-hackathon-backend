@@ -8,6 +8,7 @@ import (
 )
 
 var ErrInvalidPasswordLength = errors.New("password must be between 8 and 4096 characters")
+var ErrUserNotFound = errors.New("user not found")
 
 type UserService struct {
 	repo         UserRepository
@@ -16,6 +17,7 @@ type UserService struct {
 
 type UserRepository interface {
 	GetUser(ctx context.Context, id string) (*models.User, error)
+	GetUserProfile(ctx context.Context, id string) (*models.UserProfile, error)
 	CreateUser(ctx context.Context, user *models.User) error
 }
 
@@ -57,4 +59,15 @@ func (s *UserService) VerifyToken(ctx context.Context, idToken string) (string, 
 // GetUser returns the user from DB by ID.
 func (s *UserService) GetUser(ctx context.Context, id string) (*models.User, error) {
 	return s.repo.GetUser(ctx, id)
+}
+
+func (s *UserService) GetUserProfile(ctx context.Context, id string) (*models.UserProfile, error) {
+	p, err := s.repo.GetUserProfile(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if p == nil {
+		return nil, ErrUserNotFound
+	}
+	return p, nil
 }
