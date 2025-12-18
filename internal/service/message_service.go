@@ -8,7 +8,6 @@ import (
 
 	"log" // Moved log to its own group as per instruction
 	"uttc-hackathon-backend/internal/models"
-	"uttc-hackathon-backend/internal/repository"
 
 	"sort"
 
@@ -20,12 +19,23 @@ var (
 	ErrSelfMessage     = errors.New("cannot send message to yourself")
 )
 
-type MessageService struct {
-	repo     *repository.MessageRepository
-	userRepo *repository.UserRepo
+type MessageRepository interface {
+	CreateMessage(ctx context.Context, m *models.Message) error
+	GetMessages(ctx context.Context, userID, otherUserID string) ([]*models.Message, error)
+	GetLatestIncomingMessages(ctx context.Context, userID string) ([]*models.Message, error)
+	GetLatestOutgoingMessages(ctx context.Context, userID string) ([]*models.Message, error)
 }
 
-func NewMessageService(repo *repository.MessageRepository, userRepo *repository.UserRepo) *MessageService {
+type MessageUserRepo interface {
+	GetUserProfile(ctx context.Context, id string) (*models.UserProfile, error)
+}
+
+type MessageService struct {
+	repo     MessageRepository
+	userRepo MessageUserRepo
+}
+
+func NewMessageService(repo MessageRepository, userRepo MessageUserRepo) *MessageService {
 	return &MessageService{
 		repo:     repo,
 		userRepo: userRepo,

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"strings"
 	"uttc-hackathon-backend/internal/models"
-	"uttc-hackathon-backend/internal/repository"
 
 	"github.com/oklog/ulid/v2"
 )
@@ -16,10 +15,16 @@ const (
 )
 
 type ListingService struct {
-	repo *repository.ListingRepo
+	repo ListingRepository
 }
 
-func NewListingService(repo *repository.ListingRepo) *ListingService {
+type ListingRepository interface {
+	GetListingsFeed(ctx context.Context, limit, offset int) ([]*models.Listing, error)
+	CreateListing(ctx context.Context, l *models.Listing) error
+	GetListing(ctx context.Context, id string) (*models.Listing, error)
+}
+
+func NewListingService(repo ListingRepository) *ListingService {
 	return &ListingService{repo: repo}
 }
 
