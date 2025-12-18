@@ -24,6 +24,7 @@ type OrderService struct {
 type OrderRepository interface {
 	CreateOrder(ctx context.Context, listingID string, fn func(*models.Listing) (*models.Order, error)) error
 	GetOrder(ctx context.Context, orderID string) (*models.Order, error)
+	GetOrdersByUserID(ctx context.Context, userID string) ([]*models.Order, error)
 }
 
 func NewOrderService(repo OrderRepository) *OrderService {
@@ -92,4 +93,8 @@ func (s *OrderService) GetOrder(ctx context.Context, userID, orderID string) (*m
 	}
 
 	return order, nil
+}
+
+func (s *OrderService) GetOrdersByUser(ctx context.Context, userID string) ([]*models.Order, error) {
+	return s.repo.GetOrdersByUserID(ctx, userID)
 }

@@ -70,6 +70,7 @@ func (a *App) Routes() http.Handler {
 
 	// Orders
 	mux.Handle("POST /orders", a.authMiddleware(http.HandlerFunc(a.orderHandler.HandleCreate)))
+	mux.Handle("GET /orders/my", a.authMiddleware(http.HandlerFunc(a.orderHandler.HandleGetMyOrders)))
 	mux.Handle("GET /orders/{orderId}", a.authMiddleware(http.HandlerFunc(a.orderHandler.HandleGet)))
 
 	// Messages

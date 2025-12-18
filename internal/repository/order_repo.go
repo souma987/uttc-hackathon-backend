@@ -122,3 +122,35 @@ func (r *OrderRepo) GetOrder(ctx context.Context, orderID string) (*models.Order
 	}
 	return &o, nil
 }
+
+func (r *OrderRepo) GetOrdersByUserID(ctx context.Context, userID string) ([]*models.Order, error) {
+	query := `
+		SELECT id, buyer_id, seller_id, listing_id, listing_title, listing_main_image,
+			listing_price, quantity, total_price, platform_fee, net_payout, status, created_at, updated_at
+		FROM orders
+		WHERE buyer_id = ? OR seller_id = ?
+		ORDER BY created_at DESC
+	`
+	rows, err := r.db.QueryContext(ctx, query, userID, userID)
+	if err != nil {
+		return nil, fmt.Errorf("query orders: %w", err)
+	}
+	defer rows.Close()
+
+	var orders []*models.Order
+	for rows.Next() {
+		var o models.Order
+		if err := rows.Scan(
+			&o.ID, &o.BuyerID, &o.SellerID, &o.ListingID, &o.ListingTitle, &o.ListingMainImage,
+			&o.ListingPrice, &o.Quantity, &o.TotalPrice, &o.PlatformFee, &o.NetPayout, &o.Status,
+			&o.CreatedAt, &o.UpdatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("scan order: %w", err)
+		}
+		orders = append(orders, &o)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate orders: %w", err)
+	}
+	return orders, nil
+}
