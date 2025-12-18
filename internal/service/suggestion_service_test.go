@@ -36,7 +36,7 @@ func TestSuggestionService_GetListingSuggestion(t *testing.T) {
 			condition:   "Used",
 			language:    "en",
 			mockSetup: func(m *MockVertexGenerativeClient) {
-				m.On("GenerateContent", mock.Anything, "gemini-2.5-flash", mock.Anything, mock.MatchedBy(func(c repository.GenerationConfig) bool {
+				m.On("GenerateContent", mock.Anything, "gemini-2.0-flash-lite", mock.Anything, mock.MatchedBy(func(c repository.GenerationConfig) bool {
 					return c.JsonResponse == true
 				})).Return(`["Storage", "Color", "Battery Health"]`, nil)
 			},
@@ -49,7 +49,7 @@ func TestSuggestionService_GetListingSuggestion(t *testing.T) {
 			condition:   "Used",
 			language:    "ja",
 			mockSetup: func(m *MockVertexGenerativeClient) {
-				m.On("GenerateContent", mock.Anything, "gemini-2.5-flash", mock.Anything, mock.MatchedBy(func(c repository.GenerationConfig) bool {
+				m.On("GenerateContent", mock.Anything, "gemini-2.0-flash-lite", mock.Anything, mock.MatchedBy(func(c repository.GenerationConfig) bool {
 					// We could inspect system instructions too but simplified here
 					return c.JsonResponse == true
 				})).Return(`["容量", "色"]`, nil)
