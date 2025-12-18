@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"cloud.google.com/go/vertexai/genai"
+	"google.golang.org/genai"
 )
 
 type VertexRepository struct {
@@ -15,26 +15,30 @@ func NewVertexRepository(client *genai.Client) *VertexRepository {
 }
 
 func (r *VertexRepository) GenerateContent(ctx context.Context, modelName string, prompt string, systemInstruction string) (string, error) {
-	model := r.client.GenerativeModel(modelName)
+	var config *genai.GenerateContentConfig
 	if systemInstruction != "" {
-		model.SystemInstruction = &genai.Content{
-			Role:  "",
-			Parts: []genai.Part{genai.Text(systemInstruction)},
+		config = &genai.GenerateContentConfig{
+			SystemInstruction: &genai.Content{
+				Parts: []*genai.Part{{Text: systemInstruction}},
+			},
 		}
 	}
-	resp, err := model.GenerateContent(ctx, genai.Text(prompt))
+
+	contents := genai.Text(prompt)
+
+	resp, err := r.client.Models.GenerateContent(ctx, modelName, contents, config)
 	if err != nil {
 		return "", err
 	}
 
 	if len(resp.Candidates) == 0 || len(resp.Candidates[0].Content.Parts) == 0 {
-		return "", nil // Or an error indicating no response
+		return "", nil
 	}
 
 	var result string
 	for _, part := range resp.Candidates[0].Content.Parts {
-		if txt, ok := part.(genai.Text); ok {
-			result += string(txt)
+		if part.Text != "" {
+			result += part.Text
 		}
 	}
 

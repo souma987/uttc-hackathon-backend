@@ -8,8 +8,8 @@ import (
 	"uttc-hackathon-backend/internal/repository"
 	"uttc-hackathon-backend/internal/service"
 
-	"cloud.google.com/go/vertexai/genai"
 	"firebase.google.com/go/v4/auth"
+	"google.golang.org/genai"
 )
 
 type App struct {

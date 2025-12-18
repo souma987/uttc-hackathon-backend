@@ -35,7 +35,6 @@ func main() {
 
 	fbAuth := client.InitFirebaseAuth(googleCredentials)
 	vertexClient := client.InitVertexAI(gcpProjectID, gcpLocation, googleCredentials)
-	defer vertexClient.Close()
 
 	routes := app.NewApp(db, fbAuth, vertexClient).Routes()
 	handlerWithCors := middleware.CorsMiddleware(routes, corsAllowOrigin)
