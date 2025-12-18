@@ -18,23 +18,21 @@ func NewOrderRepo(db *sql.DB) *OrderRepo {
 }
 
 var (
-	ErrListingNotFound   = errors.New("listing not found or not active")
-	ErrInsufficientStock = errors.New("insufficient stock")
-	ErrListingNotActive  = errors.New("listing is not active")
-	ErrOrderNotFound     = errors.New("order not found")
+	ErrListingNotFound = errors.New("listing not found or not active")
+	ErrOrderNotFound   = errors.New("order not found")
 )
 
-func (r *OrderRepo) CreateOrder(ctx context.Context, listingID string, quantity int, fn func(*models.Listing) (*models.Order, error)) error {
+// CreateOrder updates listing and creates order atomically preventing race conditions
+func (r *OrderRepo) CreateOrder(ctx context.Context, listingID string, fn func(*models.Listing) (*models.Order, error)) error {
 	tx, err := r.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelReadCommitted})
 	if err != nil {
 		return fmt.Errorf("begin tx: %w", err)
 	}
 	defer tx.Rollback()
 
-	// 1. Lock and Get Listing Details
-	// We select FOR UPDATE to prevent race conditions on quantity
+	// LOCK Listing
 	queryGet := `
-		SELECT id, seller_id, title, images, price, quantity, status
+		SELECT id, seller_id, title, description, images, price, quantity, status, item_condition, created_at, updated_at
 		FROM listings
 		WHERE id = ?
 		FOR UPDATE
@@ -43,7 +41,7 @@ func (r *OrderRepo) CreateOrder(ctx context.Context, listingID string, quantity 
 	var imagesJSON []byte
 
 	err = tx.QueryRowContext(ctx, queryGet, listingID).Scan(
-		&l.ID, &l.SellerID, &l.Title, &imagesJSON, &l.Price, &l.Quantity, &l.Status,
+		&l.ID, &l.SellerID, &l.Title, &l.Description, &imagesJSON, &l.Price, &l.Quantity, &l.Status, &l.ItemCondition, &l.CreatedAt, &l.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -52,37 +50,35 @@ func (r *OrderRepo) CreateOrder(ctx context.Context, listingID string, quantity 
 		return fmt.Errorf("get listing for update: %w", err)
 	}
 
-	if l.Status != models.ListingStatusActive {
-		return ErrListingNotActive
-	}
-
-	if l.Quantity < quantity {
-		return ErrInsufficientStock
-	}
-
 	// Parse images
 	if err := json.Unmarshal(imagesJSON, &l.Images); err != nil {
 		return fmt.Errorf("unmarshal images: %w", err)
 	}
 
-	// 2. Call Service Callback
 	o, err := fn(&l)
 	if err != nil {
-		return err // Service error, rollback happens via defer
+		return err
 	}
 
-	// 3. Update Listing Quantity
+	newImagesJSON, err := json.Marshal(l.Images)
+	if err != nil {
+		return fmt.Errorf("marshal images: %w", err)
+	}
+
 	queryUpdate := `
 		UPDATE listings
-		SET quantity = quantity - ?
+		SET title = ?, description = ?, images = ?, price = ?, quantity = ?, status = ?, item_condition = ?
 		WHERE id = ?
 	`
-	_, err = tx.ExecContext(ctx, queryUpdate, quantity, listingID)
+	_, err = tx.ExecContext(ctx, queryUpdate,
+		l.Title, l.Description, newImagesJSON, l.Price,
+		l.Quantity, l.Status, l.ItemCondition,
+		listingID,
+	)
 	if err != nil {
-		return fmt.Errorf("update listing quantity: %w", err)
+		return fmt.Errorf("update listing: %w", err)
 	}
 
-	// 4. Insert Order
 	queryInsert := `
 		INSERT INTO orders (
 			id, buyer_id, seller_id, listing_id, listing_title, listing_main_image,

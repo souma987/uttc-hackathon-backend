@@ -41,12 +41,12 @@ func (h *OrderHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if errors.Is(err, repository.ErrListingNotFound) || errors.Is(err, repository.ErrListingNotActive) {
+		if errors.Is(err, repository.ErrListingNotFound) || errors.Is(err, service.ErrListingNotActive) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if errors.Is(err, repository.ErrInsufficientStock) {
-			http.Error(w, err.Error(), http.StatusConflict) // Or 422
+		if errors.Is(err, service.ErrInsufficientStock) {
+			http.Error(w, err.Error(), http.StatusConflict)
 			return
 		}
 

@@ -10,9 +10,11 @@ import (
 )
 
 var (
-	ErrQuantityInvalid = errors.New("quantity must be greater than 0")
-	ErrUnauthorized    = errors.New("unauthorized to access this order")
-	ErrBuyOwnListing   = errors.New("cannot buy your own listing")
+	ErrQuantityInvalid   = errors.New("quantity must be greater than 0")
+	ErrUnauthorized      = errors.New("unauthorized to access this order")
+	ErrBuyOwnListing     = errors.New("cannot buy your own listing")
+	ErrListingNotActive  = errors.New("listing is not active")
+	ErrInsufficientStock = errors.New("insufficient stock")
 )
 
 type OrderService struct {
@@ -20,7 +22,7 @@ type OrderService struct {
 }
 
 type OrderRepository interface {
-	CreateOrder(ctx context.Context, listingID string, quantity int, fn func(*models.Listing) (*models.Order, error)) error
+	CreateOrder(ctx context.Context, listingID string, fn func(*models.Listing) (*models.Order, error)) error
 	GetOrder(ctx context.Context, orderID string) (*models.Order, error)
 }
 
@@ -33,10 +35,22 @@ func (s *OrderService) CreateOrder(ctx context.Context, buyerID string, req *mod
 		return nil, ErrQuantityInvalid
 	}
 
-	// Use repository transactional callback to ensure consistency
-	err := s.repo.CreateOrder(ctx, req.ListingID, req.Quantity, func(l *models.Listing) (*models.Order, error) {
+	err := s.repo.CreateOrder(ctx, req.ListingID, func(l *models.Listing) (*models.Order, error) {
 		if buyerID == l.SellerID {
 			return nil, ErrBuyOwnListing
+		}
+
+		if l.Status != models.ListingStatusActive {
+			return nil, ErrListingNotActive
+		}
+
+		if l.Quantity < req.Quantity {
+			return nil, ErrInsufficientStock
+		}
+
+		l.Quantity -= req.Quantity
+		if l.Quantity == 0 {
+			l.Status = models.ListingStatusSold
 		}
 
 		req.ID = "ord_" + ulid.Make().String()
@@ -51,9 +65,8 @@ func (s *OrderService) CreateOrder(ctx context.Context, buyerID string, req *mod
 		req.CreatedAt = time.Now()
 		req.UpdatedAt = time.Now()
 
-		// Calculate totals
 		req.TotalPrice = l.Price * req.Quantity
-		// Fee is 10% of total price, rounded up (ceil)
+		// 10% fee
 		req.PlatformFee = (req.TotalPrice + 9) / 10
 		req.NetPayout = req.TotalPrice - req.PlatformFee
 
