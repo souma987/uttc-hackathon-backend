@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 	"uttc-hackathon-backend/internal/app"
-	"uttc-hackathon-backend/internal/database"
+	"uttc-hackathon-backend/internal/client"
 	"uttc-hackathon-backend/internal/middleware"
 )
 
@@ -27,14 +27,14 @@ func main() {
 	gcpProjectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	gcpLocation := os.Getenv("GOOGLE_CLOUD_LOCATION")
 
-	db := database.InitDB(mysqlUser, mysqlUserPwd, mysqlDatabase, mysqlHost, mysqlConnectionParms)
+	db := client.InitDB(mysqlUser, mysqlUserPwd, mysqlDatabase, mysqlHost, mysqlConnectionParms)
 	defer func() {
 		log.Println("Closing DB connection...")
-		database.CloseDB(db)
+		client.CloseDB(db)
 	}()
 
-	fbAuth := database.InitFirebaseAuth(googleCredentials)
-	vertexClient := database.InitVertexAI(gcpProjectID, gcpLocation, googleCredentials)
+	fbAuth := client.InitFirebaseAuth(googleCredentials)
+	vertexClient := client.InitVertexAI(gcpProjectID, gcpLocation, googleCredentials)
 	defer vertexClient.Close()
 
 	routes := app.NewApp(db, fbAuth, vertexClient).Routes()
