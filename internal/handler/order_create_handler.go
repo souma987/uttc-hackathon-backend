@@ -39,11 +39,6 @@ func NewOrderHandler(svc *service.OrderService, userSvc *service.UserService) *O
 //   - 201 Created
 //   - Body: Order
 func (h *OrderHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	userID := middleware.GetUserIDFromContext(r.Context())
 
 	var req models.Order

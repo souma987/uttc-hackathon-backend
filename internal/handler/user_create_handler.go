@@ -48,11 +48,6 @@ type CreateUserRequest struct {
 //   - 405 Method Not Allowed: request method is not POST
 //   - 500 Internal Server Error: failed to encode response
 func (h *UserHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	var req CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid json", http.StatusBadRequest)

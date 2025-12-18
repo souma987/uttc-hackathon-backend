@@ -33,11 +33,6 @@ import (
 //   - Content-Type: application/json
 //   - Body: Listing
 func (h *ListingHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	userID := middleware.GetUserIDFromContext(r.Context())
 
 	var req struct {

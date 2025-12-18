@@ -18,11 +18,6 @@ import (
 //   - Content-Type: application/json
 //   - Body: Listing
 func (h *ListingHandler) HandleGetListing(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	id := r.PathValue("id")
 	if id == "" {
 		http.Error(w, "missing listing id", http.StatusBadRequest)

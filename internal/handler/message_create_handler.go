@@ -35,11 +35,6 @@ type createMessageRequest struct {
 //   - 401 Unauthorized: Missing or invalid token
 //   - 500 Internal Server Error: Database error
 func (h *MessageHandler) HandleCreate(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	userID := middleware.GetUserIDFromContext(r.Context())
 
 	var req createMessageRequest

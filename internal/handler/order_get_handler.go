@@ -26,11 +26,6 @@ import (
 //   - 401 Unauthorized
 //   - 404 Not Found
 func (h *OrderHandler) HandleGet(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	userID := middleware.GetUserIDFromContext(r.Context())
 
 	// 2. Parse Order ID
