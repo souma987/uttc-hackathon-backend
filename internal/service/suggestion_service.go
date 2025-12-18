@@ -71,7 +71,8 @@ Strictly valid JSON. Example: "["Brand", "Size", "Material"]"`
 		Temperature:       &temperature,
 		JsonResponse:      true,
 	}
-	respStr, err := s.vertexRepo.GenerateContent(ctx, "gemini-1.5-flash", prompt, config)
+	// gemini-1.5-flash-002 is no longer available
+	respStr, err := s.vertexRepo.GenerateContent(ctx, "gemini-2.5-flash", prompt, config)
 	if err != nil {
 		log.Printf("failed to generate suggestion: %v", err)
 		return []string{}

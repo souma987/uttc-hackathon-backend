@@ -15,7 +15,7 @@ func InitVertexAI(projectID, location, googleCredentialsJson string) *genai.Clie
 	jsonCreds := []byte(googleCredentialsJson)
 
 	// Create an HTTP client with the credentials
-	httpClient, _, err := http.NewClient(ctx, option.WithCredentialsJSON(jsonCreds))
+	httpClient, _, err := http.NewClient(ctx, option.WithCredentialsJSON(jsonCreds), option.WithScopes("https://www.googleapis.com/auth/cloud-platform"))
 	if err != nil {
 		log.Fatalf("error creating http client for vertex ai: %v\n", err)
 	}
