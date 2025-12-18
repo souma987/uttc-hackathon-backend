@@ -5,6 +5,7 @@
     <file url="file://$PROJECT_DIR$/migrations/0001_create_table_users.sql" value="75629401-4f09-468c-ad24-6591a1f27857" />
     <file url="file://$PROJECT_DIR$/migrations/0003_rename_columns_in_orders.sql" value="75629401-4f09-468c-ad24-6591a1f27857" />
     <file url="file://$PROJECT_DIR$/migrations/0004_create_table_messages.sql" value="75629401-4f09-468c-ad24-6591a1f27857" />
+    <file url="file://$PROJECT_DIR$/migrations/0005_add_self_interaction_checks.sql" value="75629401-4f09-468c-ad24-6591a1f27857" />
     <file url="file://$PROJECT_DIR$/migrations/seeds/listings.sql" value="75629401-4f09-468c-ad24-6591a1f27857" />
   </component>
 </project>
