@@ -6,6 +6,7 @@
     <file url="file://$PROJECT_DIR$/migrations/0003_rename_columns_in_orders.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/migrations/0004_create_table_messages.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/migrations/0005_add_self_interaction_checks.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/migrations/0006_remove_awaiting_payment_from_orders_status.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/migrations/seeds/listings.sql" dialect="MySQL" />
     <file url="PROJECT" dialect="MySQL" />
   </component>

@@ -47,7 +47,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, buyerID string, req *mod
 		if len(l.Images) > 0 {
 			req.ListingMainImage = l.Images[0].URL
 		}
-		req.Status = models.OrderStatusAwaitingPayment
+		req.Status = models.OrderStatusPaid
 		req.CreatedAt = time.Now()
 		req.UpdatedAt = time.Now()
 
