@@ -13,13 +13,14 @@ import (
 )
 
 type App struct {
-	UserHandler       *handler.UserHandler
-	listingHandler    *handler.ListingHandler
-	orderHandler      *handler.OrderHandler
-	MessageHandler    *handler.MessageHandler
-	SuggestionHandler *handler.SuggestionHandler
-	authMiddleware    func(http.Handler) http.Handler
-	VertexRepo        *repository.VertexRepository // Added this
+	UserHandler        *handler.UserHandler
+	listingHandler     *handler.ListingHandler
+	orderHandler       *handler.OrderHandler
+	MessageHandler     *handler.MessageHandler
+	SuggestionHandler  *handler.SuggestionHandler  // Exported
+	TranslationHandler *handler.TranslationHandler // Added this
+	authMiddleware     func(http.Handler) http.Handler
+	VertexRepo         *repository.VertexRepository // Added this
 }
 
 func NewApp(db *sql.DB, fbAuth *auth.Client, vertexClient *genai.Client) *App {
@@ -42,16 +43,20 @@ func NewApp(db *sql.DB, fbAuth *auth.Client, vertexClient *genai.Client) *App {
 	messageHandler := handler.NewMessageHandler(messageSvc, userSvc)
 	suggestionHandler := handler.NewSuggestionHandler(suggestionSvc)
 
+	translationSvc := service.NewTranslationService(vertexRepo)
+	translationHandler := handler.NewTranslationHandler(translationSvc)
+
 	authMW := middleware.AuthMiddleware(userSvc)
 
 	return &App{
-		UserHandler:       userHandler,
-		listingHandler:    listingHandler,
-		orderHandler:      orderHandler,
-		MessageHandler:    messageHandler,
-		SuggestionHandler: suggestionHandler,
-		authMiddleware:    authMW,
-		VertexRepo:        vertexRepo,
+		UserHandler:        userHandler,
+		listingHandler:     listingHandler,
+		orderHandler:       orderHandler,
+		MessageHandler:     messageHandler,
+		SuggestionHandler:  suggestionHandler,
+		TranslationHandler: translationHandler,
+		authMiddleware:     authMW,
+		VertexRepo:         vertexRepo,
 	}
 }
 
@@ -80,6 +85,9 @@ func (a *App) Routes() http.Handler {
 
 	// Suggestions
 	mux.Handle("POST /suggestions/newListing", a.authMiddleware(http.HandlerFunc(a.SuggestionHandler.HandleGetSuggestion)))
+
+	// Translation
+	mux.HandleFunc("POST /translate", a.TranslationHandler.HandleTranslate)
 
 	return mux
 }

@@ -24,6 +24,7 @@
 ## AI Integrations
 - [ ] **Generative AI Feature**
     - [x] **AI Suggestion**: Implementation of a generative AI feature (suggesting metadata fields like "Brand", "Size" based on listing content).
+    - [x] **AI Translation**: Endpoint to translate product title and description between English and Japanese using Vertex AI.
 
 ## DB Schema
 - [x] **Listings**
