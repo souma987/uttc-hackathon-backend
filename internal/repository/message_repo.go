@@ -17,8 +17,8 @@ func NewMessageRepository(db *sql.DB) *MessageRepository {
 
 func (r *MessageRepository) CreateMessage(ctx context.Context, m *models.Message) error {
 	query := `
-		INSERT INTO messages (id, sender_id, receiver_id, content, created_at)
-		VALUES (?, ?, ?, ?, ?)
+		INSERT INTO messages (id, sender_id, receiver_id, content)
+		VALUES (?, ?, ?, ?)
 	`
 	_, err := r.db.ExecContext(ctx, query,
 		m.ID,

@@ -82,13 +82,12 @@ func (r *OrderRepo) CreateOrder(ctx context.Context, listingID string, fn func(*
 	queryInsert := `
 		INSERT INTO orders (
 			id, buyer_id, seller_id, listing_id, listing_title, listing_main_image,
-			listing_price, quantity, total_price, platform_fee, net_payout, status, created_at, updated_at
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			listing_price, quantity, total_price, platform_fee, net_payout, status
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 	_, err = tx.ExecContext(ctx, queryInsert,
 		o.ID, o.BuyerID, o.SellerID, o.ListingID, o.ListingTitle, o.ListingMainImage,
 		o.ListingPrice, o.Quantity, o.TotalPrice, o.PlatformFee, o.NetPayout, o.Status,
-		o.CreatedAt, o.UpdatedAt,
 	)
 	if err != nil {
 		return fmt.Errorf("insert order: %w", err)

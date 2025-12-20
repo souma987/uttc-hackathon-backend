@@ -75,8 +75,8 @@ func (r *ListingRepo) CreateListing(ctx context.Context, l *models.Listing) erro
 	}
 
 	query := `
-		INSERT INTO listings (id, seller_id, title, description, images, price, quantity, status, item_condition, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO listings (id, seller_id, title, description, images, price, quantity, status, item_condition)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
 	_, err = r.db.ExecContext(ctx, query,
