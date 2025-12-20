@@ -25,7 +25,6 @@ func (r *MessageRepository) CreateMessage(ctx context.Context, m *models.Message
 		m.SenderID,
 		m.ReceiverID,
 		m.Content,
-		m.CreatedAt,
 	)
 	if err != nil {
 		return fmt.Errorf("insert message: %w", err)

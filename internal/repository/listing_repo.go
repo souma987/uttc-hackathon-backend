@@ -89,8 +89,6 @@ func (r *ListingRepo) CreateListing(ctx context.Context, l *models.Listing) erro
 		l.Quantity,
 		l.Status,
 		l.ItemCondition,
-		l.CreatedAt,
-		l.UpdatedAt,
 	)
 	if err != nil {
 		return fmt.Errorf("insert listing: %w", err)
